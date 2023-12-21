@@ -30,3 +30,7 @@
 *.exe
 *.out
 *.app
+
+# app artifacts
+imgui.ini
+Onix
