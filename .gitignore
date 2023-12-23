@@ -34,3 +34,6 @@
 # app artifacts
 imgui.ini
 Onix
+build/**
+build/
+imgui_log.txts

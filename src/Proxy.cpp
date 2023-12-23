@@ -1,42 +1,15 @@
-#include "Client.h"
-#include "Tun.hpp"
-
-#include <stdio.h>
-#include <iostream>
-
-#include "../imgui/imgui.h"
+#include "Proxy.hpp"
 #include "Window.hpp"
-#include <GLFW/glfw3.h>
-#include "../backends/imgui_impl_opengl3.h"
-#include "../backends/imgui_impl_glfw.h"
 
-#include "imfilebrowser.h"
-
-namespace onix
-{
-    Client::Client()
-    {
-    }
-
-    Client::~Client()
-    {
-    }
-
-    void Client::start()
-    {
+namespace onix{
+    Proxy::start(){
         Window window{};
         bool show_demo_window = true;
         bool show_another_window = false;
         ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-        ImGui::FileBrowser fileDialog;
-
-        // (optional) set browser properties
-        fileDialog.SetTitle("title");
-        fileDialog.SetTypeFilters({".h", ".cpp"});
-
         (void)window.start(
-            [this, &show_demo_window, &show_another_window, &clear_color, &fileDialog](GLFWwindow *window, ImGuiIO &io)
+            [this, &show_demo_window, &show_another_window, &clear_color](GLFWwindow *window, ImGuiIO &io)
             {
                 glfwPollEvents();
 
@@ -48,24 +21,6 @@ namespace onix
                 ImGui::Begin("Hello, world!"); // GLOBAL HW
                 ImGui::Text(state.c_str());
                 ImGui::End();
-
-                ImGui::ShowDemoWindow(&show_demo_window);
-
-                if (ImGui::Begin("dummy window"))
-                {
-                    // open file dialog when user clicks this button
-                    if (ImGui::Button("open file dialog"))
-                        fileDialog.Open();
-                }
-                ImGui::End();
-
-                fileDialog.Display();
-
-                if (fileDialog.HasSelected())
-                {
-                    std::cout << "Selected filename" << fileDialog.GetSelected().string() << std::endl;
-                    fileDialog.ClearSelected();
-                }
 
                 // 2. Show a simple window that we create ourselves. We use a Begin/End
                 // pair to create a named window.
@@ -132,4 +87,4 @@ namespace onix
                 glfwSwapBuffers(window);
             });
     }
-} // namespace onixs
+}
