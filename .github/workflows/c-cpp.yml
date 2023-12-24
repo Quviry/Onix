@@ -16,7 +16,9 @@ jobs:
     - name: Instal deps
       run: sudo apt install make build-essential git libglfw3 libglfw3-dev pkg-config
     - name: Submodules
-      run: git submodule update --init --recursive
+      run: |
+        git clone https://github.com/ocornut/imgui.git
+        ls
     - name: make
       run: make
     - name: check
