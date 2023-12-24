@@ -36,23 +36,25 @@ int main(int argc, char *argv[])
     {
         if (!strcmp(argv[1], "--client") || !strcmp(argv[1], "-c"))
         {
-            (void)daemon(0, 0);
+            // (void)daemon(0, 0);
 
             onix::run_client();
+            return 0;
         }
         if (!strcmp(argv[1], "--proxy") || !strcmp(argv[1], "-p"))
         {
-            (void)daemon(0, 0);
+            // (void)daemon(0, 0);
 
             onix::run_proxy();
+            return 0;
         }
 
         if (!strcmp(argv[1], "--resolver") || !strcmp(argv[1], "-r"))
         {
-            (void)daemon(0, 0);
+            // (void)daemon(0, 0);
 
-            onix::Resolver resolver{};
-            resolver.start();
+            onix::run_resolver();
+            return 0;
         }
         if (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))
         {

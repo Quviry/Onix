@@ -1,5 +1,5 @@
 #include "client.h"
-#include "Tun.hpp"
+#include "tun.hpp"
 
 #include <stdio.h>
 #include <fstream>
@@ -15,6 +15,7 @@
 #include "imfilebrowser.h"
 #include "widgets.hpp"
 #include <thread>
+#include "tcp.hpp"
 
 namespace onix
 {
@@ -45,7 +46,7 @@ namespace onix
                 ImGui::SetNextWindowPos(viewport->Pos);
 
                 // Main widget
-                ImGui::Begin("Hello, world!", nullptr,
+                ImGui::Begin("Client control", nullptr,
                              ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoCollapse); // GLOBAL HW
 
                 // Running connection user-state
@@ -59,12 +60,12 @@ namespace onix
                 ImGui::Button("Open Journal");
 
                 // Traffic speed line
-                float samples[100];
-                for (int n = 0; n < 100; ++n)
-                {
-                    samples[n] = std::sin(n * 0.2f + ImGui::GetTime() * 1.5f);
-                }
-                ImGui::PlotLines("Moving sin", samples, 100);
+                // float samples[100];
+                // for (int n = 0; n < 100; ++n)
+                // {
+                //     samples[n] = std::sin(n * 0.2f + ImGui::GetTime() * 1.5f);
+                // }
+                // ImGui::PlotLines("Moving sin", samples, 100);
                 // ImGui::PlotLines("Connection state", sinp, NULL, 70, 0, NULL, -1.0f, 1.0f, ImVec2(160, 60));
 
                 // Connection state
@@ -97,7 +98,6 @@ namespace onix
                 }
                 ImGui::End();
 
-                ImGui::ShowDemoWindow();
                 // static std::string file = "";
                 // if (ImGui::Begin("dummy window"))
                 // {
@@ -152,16 +152,106 @@ namespace onix
         return cs;
     }
 
+    bool check_address_valid(char buf[], size_t n)
+    {
+        int d = 3;
+        uint32_t acc = 0;
+        for (int i = 0; i < n; ++i)
+        {
+            if (buf[i] == '.')
+            {
+                d--;
+                acc = 0;
+            }
+            else if (buf[i] >= '0' && buf[i] <= '9')
+            {
+                acc = acc * 10 + (buf[i] - '0');
+            }
+            if (d < 0 || acc > 255 || acc < 0)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
     void run_client_network(std::shared_ptr<client_state> cs)
     {
         if (cs->gt_priority && !cs->gt_table.empty())
         {
+            for (const GoldentTicket &gt : cs->gt_table)
+            {
+                client_tcp_pipeline(
+                    (gt.proxy.address),
+                    L1_COMMUNICATION_PORT,
+                    [&gt, &cs](file_descriptor fd)
+                    {
+                        char buffer[1500] = "ping::gt::avil?\0";
+                        if (write(fd, buffer, sizeof(buffer)) == -1)
+                            return;
+                        if (read(fd, buffer, sizeof(buffer)) == -1)
+                            return;
+                        if (strncmp(buffer, "ping::gt::avil!\0", 17) != 0)
+                            return;
+                        strcpy(buffer, gt.ticket.p);
+                        if (write(fd, buffer, sizeof(buffer)) == -1)
+                            return;
+                        if (read(fd, buffer, sizeof(buffer)) == -1)
+                            return;
+                        if (strncmp(buffer, "ping::gt::appr!\0", 17) != 0)
+                        {
+                            cs->active_proxy = gt.proxy;
+                        }
+                    });
+                if (cs->active_proxy.has_value())
+                {
+                    break;
+                }
+            }
         }
         while (true)
         {
-            std::cout << cs->auto_connection_enabled << std::endl;
+            if (cs->active_proxy.has_value())
+            {
+                break;
+            }
+            if (cs->auto_connection_enabled)
+            {
+                for (const auto &res : cs->resolvers)
+                {
+                    client_tcp_pipeline(
+                        res.address,
+                        L3_COMMUNICATION_PORT,
+                        [&cs](file_descriptor fd)
+                        {
+                            char buffer[1500] = "ping::ga\0";
+                            if (write(fd, buffer, sizeof(buffer)) == -1)
+                            {
+                                return;
+                            }
+                            int nread = read(fd, buffer, sizeof(buffer));
+                            if (nread < 2)
+                            {
+                                // -1 -- error
+                                // 0 -- empty file
+                                // zeroed file
+                                return;
+                            }
+                            if (check_address_valid(buffer, nread))
+                            {
+                                Proxy pr;
+                                strncpy(pr.address, buffer, nread);
+                                cs->active_proxy = pr;
+                            };
+                        });
+                    if (cs->active_proxy.has_value())
+                        break;
+                }
+            }
         }
-        
+
+        // He has a proxxy
+        run_tun();
     }
 
     void run_client()

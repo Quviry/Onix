@@ -1,6 +1,7 @@
 #pragma once
 
 #include "datatypes.h"
+#include <optional>
 
 namespace onix
 {
@@ -12,6 +13,7 @@ namespace onix
         ConnectionType con_type;
         std::vector<Resolver> resolvers;
         GTTable gt_table;
+        std::optional<Proxy> active_proxy = std::nullopt;
     };
     
     
