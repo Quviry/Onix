@@ -36,4 +36,4 @@ imgui.ini
 Onix
 build/**
 build/
-imgui_log.txts
+imgui_log.txt

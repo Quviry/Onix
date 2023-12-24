@@ -1,6 +1,8 @@
-#include "src/Client.h"
-#include "src/Proxy.hpp"
-#include "src/Resolver.hpp"
+#pragma execution_character_set('utf-8')
+
+#include "src/client.h"
+#include "src/proxy.hpp"
+#include "src/resolver.hpp"
 
 #include <stdio.h>
 #include <unistd.h>
@@ -27,8 +29,7 @@ int main(int argc, char *argv[])
 
     if (argc == 1)
     {
-        onix::Client client{};
-        client.start();
+        onix::run_client();
     }
 
     else
@@ -37,15 +38,13 @@ int main(int argc, char *argv[])
         {
             (void)daemon(0, 0);
 
-            onix::Client client{};
-            client.start();
+            onix::run_client();
         }
         if (!strcmp(argv[1], "--proxy") || !strcmp(argv[1], "-p"))
         {
             (void)daemon(0, 0);
 
-            onix::Proxy proxy{};
-            proxy.start();
+            onix::run_proxy();
         }
 
         if (!strcmp(argv[1], "--resolver") || !strcmp(argv[1], "-r"))

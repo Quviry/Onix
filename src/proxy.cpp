@@ -1,15 +1,62 @@
-#include "Proxy.hpp"
+#include "proxy.hpp"
 #include "Window.hpp"
+#include "datatypes.h"
+#include "tcp.hpp"
 
-namespace onix{
-    Proxy::start(){
+#include "../imgui.h"
+#include "../backends/imgui_impl_glfw.h"
+#include "../backends/imgui_impl_opengl3.h"
+#include <thread>
+#include <memory>
+
+constexpr int MAX_PING_CONNECTIONS = 8;
+
+namespace onix
+{
+
+    std::shared_ptr<proxy_state> get_proxy_state()
+    {
+        auto ps = std::make_shared<proxy_state>();
+        ps->connection_types = static_cast<uint8_t>(ConnectionType::ICMP | ConnectionType::TCP | ConnectionType::UDP);
+        return ps;
+    }
+
+    void ping_access(std::shared_ptr<proxy_state> ps)
+    {
+        for (;;)
+        {
+            for (const auto &resolver : ps->resolvers)
+            {
+
+                // std::sstring(reesollveerr.adddreeeesss)
+                if (strstr(resolver.address, ":") == nullptr)
+                {
+                    client_tcp_pipeline(std::string(resolver.address), 4000, [](int fd)
+                                        {
+                    char buffer[30];
+                    write(fd, buffer, 30); });
+                }
+                else
+                {
+                }
+            }
+        };
+    }
+
+    void run_proxy_network(std::shared_ptr<proxy_state> ps)
+    {
+        std::jthread{ping_access, ps};
+    }
+
+    void run_proxy_gui(std::shared_ptr<proxy_state> ps)
+    {
         Window window{};
         bool show_demo_window = true;
         bool show_another_window = false;
         ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
         (void)window.start(
-            [this, &show_demo_window, &show_another_window, &clear_color](GLFWwindow *window, ImGuiIO &io)
+            [&show_demo_window, &show_another_window, &clear_color](GLFWwindow *window, ImGuiIO &io)
             {
                 glfwPollEvents();
 
@@ -19,7 +66,6 @@ namespace onix{
                 ImGui::NewFrame();
 
                 ImGui::Begin("Hello, world!"); // GLOBAL HW
-                ImGui::Text(state.c_str());
                 ImGui::End();
 
                 // 2. Show a simple window that we create ourselves. We use a Begin/End
@@ -86,5 +132,11 @@ namespace onix{
 
                 glfwSwapBuffers(window);
             });
+    }
+    void run_proxy()
+    {
+        std::shared_ptr<proxy_state> ps = get_proxy_state();
+        std::jthread network_thread{run_proxy_network, ps};
+        std::jthread gui_thread{run_proxy_gui, ps};
     }
 }

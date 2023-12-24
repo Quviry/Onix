@@ -44,6 +44,7 @@ static void glfw_error_callback(int error, const char *description)
 {
     fprintf(stderr, "GLFW Error %d: %s\n", error, description);
 }
+
 namespace onix
 {
 
@@ -76,14 +77,22 @@ namespace onix
         // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+
         // only glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 3.0+ only
 #endif
+        // ImGui::SetNextWindowPos(ImVec2(0, 0));
 
         // Create window with graphics context
+        
+        // uncoment for unreaplacable splash window
+        // glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+        // glfwWindowHint(GLFW_DECORATED, GL_FALSE);
+        // glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GL_TRUE);
+        
         GLFWwindow *window = glfwCreateWindow(
-            1280, 720, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+            400, 400, "Onix interaface", nullptr, nullptr);
         if (window == nullptr)
             return 1;
         glfwMakeContextCurrent(window);
         glfwSwapInterval(1); // Enable vsync
+
 
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();

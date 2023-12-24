@@ -17,7 +17,7 @@
 EXE = Onix
 IMGUI_DIR = ./imgui
 BUILD_DIR = ./build
-SOURCES = main.cpp src/Client.cpp src/Window.cpp src/Tun.cpp
+SOURCES = main.cpp src/client.cpp src/proxy.cpp src/Window.cpp src/Tun.cpp src/widgets.cpp src/tcp.cpp
 SOURCES += $(IMGUI_DIR)/imgui.cpp $(IMGUI_DIR)/imgui_demo.cpp $(IMGUI_DIR)/imgui_draw.cpp $(IMGUI_DIR)/imgui_tables.cpp $(IMGUI_DIR)/imgui_widgets.cpp
 SOURCES += $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_opengl3.cpp
 OBJS = $(addprefix $(BUILD_DIR)/, $(addsuffix .o, $(basename $(notdir $(SOURCES)))))
