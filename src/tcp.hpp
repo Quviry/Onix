@@ -5,6 +5,7 @@
 
 using file_descriptor = int; 
 
+bool check_address_valid(char buf[], size_t n);
 
 int client_tcp_pipeline(
     std::string ip_addess="127.0.0.1",

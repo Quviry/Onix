@@ -56,20 +56,27 @@ namespace onix
                     run_connection = !run_connection;
                 }
 
-                // Journal call
-                ImGui::Button("Open Journal");
-
-                // Traffic speed line
-                // float samples[100];
-                // for (int n = 0; n < 100; ++n)
-                // {
-                //     samples[n] = std::sin(n * 0.2f + ImGui::GetTime() * 1.5f);
-                // }
-                // ImGui::PlotLines("Moving sin", samples, 100);
-                // ImGui::PlotLines("Connection state", sinp, NULL, 70, 0, NULL, -1.0f, 1.0f, ImVec2(160, 60));
+                ImGui::SameLine();
+                ImGui::Dummy(ImVec2(0., 20.f));
+                ImGui::SameLine();
 
                 // Connection state
                 ImGui::TextColored(ImVec4(0.6f, 0.1f, 0.1f, 1.0f), (const char *)u8"[off]");
+
+                ImGui::Dummy(ImVec2(40., 0.));
+
+                // Journal call
+                static bool journal = false;
+                if (ImGui::Button("Open Journal"))
+                {
+                    journal = !journal;
+                };
+                if (journal)
+                {
+                    ShowAppLog();
+                }
+
+                ImGui::Dummy(ImVec2(40., 0.));
 
                 // Settings Popup
                 if (ImGui::Button("Settings"))
@@ -86,9 +93,13 @@ namespace onix
                     ImGui::Checkbox("Autoconnect me on start", &cs->auto_connection_enabled);
                     ImGui::Checkbox("Fast connection", &cs->fast_connection_enabled);
 
+                    int current_protocol = 1;
+                    ImGui::Combo("Protocol", &current_protocol, "UDP\0TCP\0ICMP");
+
                     // Choose prototype
                     ResolversList(cs->resolvers);
                     // Choose resolver
+                    TokensList(cs->gt_table);
 
                     if (ImGui::Button("Close", ImVec2(120, 0)))
                     {
@@ -98,23 +109,7 @@ namespace onix
                 }
                 ImGui::End();
 
-                // static std::string file = "";
-                // if (ImGui::Begin("dummy window"))
-                // {
-                //     ImGui::Text("%s", file.c_str());
-                //     // open file dialog when user clicks this button
-                //     if (ImGui::Button("open file dialog"))
-                //         fileDialog.Open();
-                // }
-                // ImGui::End();
-
-                // fileDialog.Display();
-
-                // if (fileDialog.HasSelected())
-                // {
-                //     file = fileDialog.GetSelected().string();
-                //     fileDialog.ClearSelected();
-                // }
+                ImGui::ShowDemoWindow();
 
                 // Rendering
                 ImGui::Render();
@@ -139,7 +134,9 @@ namespace onix
         cs->auto_connection_enabled = true;
         cs->fast_connection_enabled = true;
         cs->con_type = ConnectionType::UDP;
-        cs->gt_table = {};
+        cs->gt_table = {
+            {.ticket{"Ox23592395"}, .proxy={.name = "Localhost\0", .address = "127.0.0.1\0"}}
+        };
         cs->resolvers = {
             {.name = "Localhost\0", .address = "127.0.0.1\0"}};
         cs->gt_priority = true;
@@ -150,29 +147,6 @@ namespace onix
             fd >> parse_string;
         }
         return cs;
-    }
-
-    bool check_address_valid(char buf[], size_t n)
-    {
-        int d = 3;
-        uint32_t acc = 0;
-        for (int i = 0; i < n; ++i)
-        {
-            if (buf[i] == '.')
-            {
-                d--;
-                acc = 0;
-            }
-            else if (buf[i] >= '0' && buf[i] <= '9')
-            {
-                acc = acc * 10 + (buf[i] - '0');
-            }
-            if (d < 0 || acc > 255 || acc < 0)
-            {
-                return false;
-            }
-        }
-        return true;
     }
 
     void run_client_network(std::shared_ptr<client_state> cs)

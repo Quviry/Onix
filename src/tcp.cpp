@@ -24,7 +24,32 @@ uint32_t ip_convert(const std::string &s)
         }
     }
     return r;
-}
+};
+
+bool check_address_valid(char buf[], size_t n)
+    {
+        int d = 3;
+        uint32_t acc = 0;
+        for (int i = 0; i < n; ++i)
+        {
+            if (buf[i] == '.')
+            {
+                d--;
+                acc = 0;
+            }
+            else if (buf[i] >= '0' && buf[i] <= '9')
+            {
+                acc = acc * 10 + (buf[i] - '0');
+            }else{
+                return false;
+            }
+            if (d < 0 || acc > 255 || acc < 0)
+            {
+                return false;
+            }
+        }
+        return true;
+    }
 
 int client_tcp_pipeline(
     std::string ip_address,
